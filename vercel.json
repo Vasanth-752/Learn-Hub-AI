@@ -1,0 +1,6 @@
+{
+  "version": 2,
+  "buildCommand": "npm run build --filter=@learnhub/web",
+  "outputDirectory": "apps/web/dist",
+  "ignoreCommand": "npx turbo ignore"
+}

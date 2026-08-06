@@ -1,0 +1,8 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(cd c:\\\\Users\\\\Vasanth\\\\Desktop\\\\Antigravity-projects\\\\LearnHub AI\\\\apps\\\\web)",
+      "Bash(npm install *)"
+    ]
+  }
+}

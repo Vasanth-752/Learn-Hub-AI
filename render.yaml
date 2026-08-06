@@ -1,0 +1,9 @@
+services:
+  - type: web
+    name: learnhub-ai-server
+    env: node
+    buildCommand: npm install && npm run build
+    startCommand: npm run start --workspace=@learnhub/server
+    envVars:
+      - key: NODE_ENV
+        value: production
