@@ -258,6 +258,7 @@ Legend: 🔧 Backend · 🎨 Frontend · 🗄️ Database · 🤖 AI · ⚙️ D
 
 **⚙️ DevOps**
 - Final production environment variable audit (Supabase prod keys, AI provider prod keys, correct CORS origin).
+- <!-- TODO [Phase 9 — GitHub OAuth Production]: GitHub OAuth app was registered in Phase 1 with a localhost/dev redirect URL. Before launch, update the GitHub OAuth app's "Homepage URL" and "Authorization callback URL" to the production domain (e.g. https://learnhubai.com/auth/callback) in the GitHub Developer Settings, then smoke-test a GitHub login on the live production URL. Deliberately deferred from Phase 1 — not a bug. -->
 - Smoke test the full user journey end-to-end in production: register → verify → create goal → generate roadmap → complete a topic → create a note → chat with AI → export PDF → sign out.
 - DNS/custom domain setup if applicable.
 
