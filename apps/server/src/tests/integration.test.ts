@@ -63,6 +63,26 @@ async function runTests() {
     fail('GET /api/me (malformed JWT)', err.message);
   }
 
+  // ── 3a. GET /api/goals — no token → 401 ──────────────────────────────────
+  console.log('\n── GET /api/goals (no token) ────────────');
+  try {
+    const res = await request(app).get('/api/goals');
+    assert.strictEqual(res.status, 401, `expected 401, got ${res.status}`);
+    pass('GET /api/goals (no token) → 401');
+  } catch (err: any) {
+    fail('GET /api/goals (no token)', err.message);
+  }
+
+  // ── 3b. GET /api/notes — no token → 401 ──────────────────────────────────
+  console.log('\n── GET /api/notes (no token) ────────────');
+  try {
+    const res = await request(app).get('/api/notes');
+    assert.strictEqual(res.status, 401, `expected 401, got ${res.status}`);
+    pass('GET /api/notes (no token) → 401');
+  } catch (err: any) {
+    fail('GET /api/notes (no token)', err.message);
+  }
+
   // ── 4. GET /api/test-error — global error handler shape ──────────────────
   console.log('\n── GET /api/test-error (error handler) ─');
   try {

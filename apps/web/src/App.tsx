@@ -8,6 +8,8 @@ import { AuthPage } from './pages/AuthPage';
 import { AuthCallbackPage } from './pages/AuthCallbackPage';
 import { DashboardPage } from './pages/DashboardPage';
 import { SettingsPage } from './pages/SettingsPage';
+import { RoadmapPage } from './pages/RoadmapPage';
+import { NotesPage } from './pages/NotesPage';
 import { ProtectedRoute, PublicRoute } from './components/auth/ProtectedRoute';
 import './index.css';
 
@@ -53,8 +55,8 @@ function App() {
           <Route path="/dashboard" element={<DashboardPage />} />
           <Route path="/settings" element={<SettingsPage />} />
           <Route path="/chat" element={<div className="min-h-screen flex items-center justify-center bg-background"><p className="text-on-surface-variant">AI Chat - Coming Soon</p></div>} />
-          <Route path="/roadmap" element={<div className="min-h-screen flex items-center justify-center bg-background"><p className="text-on-surface-variant">Roadmap - Coming Soon</p></div>} />
-          <Route path="/notes" element={<div className="min-h-screen flex items-center justify-center bg-background"><p className="text-on-surface-variant">Notes - Coming Soon</p></div>} />
+          <Route path="/roadmap" element={<RoadmapPage />} />
+          <Route path="/notes" element={<NotesPage />} />
         </Route>
 
         {/* Redirect all other routes to landing */}

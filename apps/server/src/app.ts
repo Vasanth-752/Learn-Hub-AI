@@ -3,6 +3,9 @@ import cors from 'cors';
 import { errorHandler } from './middleware/errorHandler';
 import healthRouter from './modules/health/health.router';
 import usersRouter from './modules/users/users.router';
+import goalsRouter from './modules/goals/goals.router';
+import roadmapsRouter from './modules/roadmaps/roadmaps.router';
+import notesRouter from './modules/notes/notes.router';
 
 const app = express();
 
@@ -13,6 +16,9 @@ app.use(express.json());
 // ── Routes ──────────────────────────────────────────────────────────────────
 app.use('/api/health', healthRouter);
 app.use('/api', usersRouter);
+app.use('/api/goals', goalsRouter);
+app.use('/api', roadmapsRouter);
+app.use('/api/notes', notesRouter);
 
 // ── Test route for error handler verification (development only) ─────────────
 app.get('/api/test-error', (_req, _res, next) => {

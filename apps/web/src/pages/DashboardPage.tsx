@@ -18,28 +18,28 @@ interface LearningGoal {
 }
 
 export function DashboardPage() {
-  const { user, session, setSession } = useAuthStore();
+  const { user, session } = useAuthStore();
   const [goals, setGoals] = useState<LearningGoal[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeGoal, setActiveGoal] = useState<LearningGoal | null>(null);
   const [menuOpen, setMenuOpen] = useState(false);
   const [profile, setProfile] = useState<{ avatar_url?: string | null; theme_preference?: string } | null>(null);
+  const [roadmapData, setRoadmapData] = useState<any>(null);
   const menuRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const fetchGoals = async () => {
-      if (!session) return;
-      const { data, error } = await supabase
-        .from('learning_goals')
-        .select('*')
-        .eq('user_id', user?.id)
-        .eq('status', 'active')
-        .order('created_at', { ascending: false });
-
-      if (!error && data) {
-        setGoals(data);
-        if (data.length > 0) setActiveGoal(data[0]);
-      }
+      if (!session?.access_token) return;
+      try {
+        const res = await fetch(`${import.meta.env.VITE_API_URL}/api/goals?status=active`, {
+          headers: { Authorization: `Bearer ${session.access_token}` },
+        });
+        if (res.ok) {
+          const { goals: data } = await res.json();
+          setGoals(data);
+          if (data.length > 0) setActiveGoal(data[0]);
+        }
+      } catch { /* handle error */ }
       setLoading(false);
     };
 
@@ -60,12 +60,29 @@ export function DashboardPage() {
     fetchGoals();
     fetchProfile();
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      setSession(session);
-    });
+    // Not using supabase.auth.onAuthStateChange here for the sake of simplicity, 
+    // App.tsx already handles global session state. We'll just rely on the store.
+  }, [session, user]);
 
-    return () => subscription.unsubscribe();
-  }, [session, user, setSession]);
+  useEffect(() => {
+    const fetchRoadmap = async () => {
+      if (!session?.access_token || !activeGoal) return;
+      try {
+        const res = await fetch(`${import.meta.env.VITE_API_URL}/api/goals/${activeGoal.id}/roadmap`, {
+          headers: { Authorization: `Bearer ${session.access_token}` },
+        });
+        if (res.ok) {
+          const { roadmap } = await res.json();
+          setRoadmapData(roadmap);
+        } else {
+          setRoadmapData(null);
+        }
+      } catch {
+        setRoadmapData(null);
+      }
+    };
+    fetchRoadmap();
+  }, [activeGoal, session]);
 
   // Close dropdown on outside click
   useEffect(() => {
@@ -82,9 +99,26 @@ export function DashboardPage() {
     window.location.href = '/';
   };
 
+  // Calculate actual progress based on roadmapData
+  let totalTopics = 0;
+  let completedTopics = 0;
+  let totalSprints = 0;
+
+  if (roadmapData?.sprints) {
+    totalSprints = roadmapData.sprints.length;
+    roadmapData.sprints.forEach((sprint: any) => {
+      if (sprint.topics) {
+        totalTopics += sprint.topics.length;
+        completedTopics += sprint.topics.filter((t: any) => t.is_completed).length;
+      }
+    });
+  }
+
+  const progressPercent = totalTopics > 0 ? Math.round((completedTopics / totalTopics) * 100) : 0;
+
   const stats = [
     { label: 'Active Goal', value: activeGoal?.title || 'None', icon: Target, color: 'text-primary' },
-    { label: 'Progress', value: '0%', icon: TrendingUp, color: 'text-secondary' },
+    { label: 'Progress', value: `${progressPercent}%`, icon: TrendingUp, color: 'text-secondary' },
     { label: 'Time This Week', value: '0h', icon: Clock, color: 'text-primary' },
     { label: 'Streak', value: '0 days', icon: Sparkles, color: 'text-secondary' },
   ];
@@ -215,17 +249,17 @@ export function DashboardPage() {
                     <div>
                       <div className="flex items-center justify-between mb-2">
                         <span className="text-label-md font-medium">Overall Progress</span>
-                        <span className="text-label-md text-on-surface-variant">0%</span>
+                        <span className="text-label-md text-on-surface-variant">{progressPercent}%</span>
                       </div>
-                      <Progress value={0} className="h-3" />
+                      <Progress value={progressPercent} className="h-3" />
                     </div>
                     <div className="grid sm:grid-cols-2 gap-4">
                       <Card className="bg-surface-container-low p-4">
-                        <p className="text-3xl font-semibold text-primary">0</p>
+                        <p className="text-3xl font-semibold text-primary">{completedTopics}</p>
                         <p className="text-sm text-on-surface-variant">Topics Completed</p>
                       </Card>
                       <Card className="bg-surface-container-low p-4">
-                        <p className="text-3xl font-semibold text-secondary">0</p>
+                        <p className="text-3xl font-semibold text-secondary">{totalSprints}</p>
                         <p className="text-sm text-on-surface-variant">Sprints</p>
                       </Card>
                     </div>
@@ -315,7 +349,7 @@ export function DashboardPage() {
                     </div>
                     <div>
                       <p className="text-label-md font-medium">Topics Done</p>
-                      <p className="text-sm text-on-surface-variant">0</p>
+                      <p className="text-sm text-on-surface-variant">{completedTopics}</p>
                     </div>
                   </div>
                   <TrendingUp className="size-5 text-secondary" />
