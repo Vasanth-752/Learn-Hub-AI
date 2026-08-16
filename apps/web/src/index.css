@@ -311,8 +311,40 @@
   50% { opacity: 0.6; }
 }
 
+/* Manual dark theme override — set via data-theme="dark" on <html> */
+:root[data-theme="dark"] {
+  --color-background: #1b2632;
+  --color-surface: #1b2632;
+  --color-surface-dim: #161f2b;
+  --color-surface-bright: #202d3c;
+  --color-surface-container-lowest: #161f2b;
+  --color-surface-container-low: #1a2534;
+  --color-surface-container: #1e2c3d;
+  --color-surface-container-high: #233346;
+  --color-surface-container-highest: #283a4f;
+  --color-on-surface: #f9f0df;
+  --color-on-surface-variant: #b8c8de;
+  --color-inverse-surface: #fff8f0;
+  --color-inverse-on-surface: #1f1b11;
+  --color-outline: #74777d;
+  --color-outline-variant: #5a5d63;
+  --color-oatmeal: #5a5d63;
+}
+
+:root[data-theme="dark"] .input { @apply bg-surface-container-low border-oatmeal/30; }
+:root[data-theme="dark"] .card { @apply bg-surface-container-low border-oatmeal/20; }
+:root[data-theme="dark"] .btn-secondary { @apply border-oatmeal/30 text-on-surface hover:bg-oatmeal/10; }
+:root[data-theme="dark"] .btn-ghost { @apply text-on-surface hover:bg-oatmeal/10; }
+:root[data-theme="dark"] .auth-card { @apply bg-surface-container-low border-oatmeal/20; }
+:root[data-theme="dark"] .auth-header { @apply border-oatmeal/20; }
+:root[data-theme="dark"] .auth-footer { @apply border-oatmeal/20; }
+:root[data-theme="dark"] .oauth-button { @apply border-oatmeal/30 hover:bg-oatmeal/10; }
+:root[data-theme="dark"] .divider { @apply bg-oatmeal/20; }
+:root[data-theme="dark"] .progress-track { @apply bg-oatmeal/10; }
+
+/* System preference fallback (applies when no data-theme is set) */
 @media (prefers-color-scheme: dark) {
-  :root {
+  :root:not([data-theme="light"]) {
     --color-background: #1b2632;
     --color-surface: #1b2632;
     --color-surface-dim: #161f2b;

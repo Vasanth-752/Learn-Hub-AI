@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(node -e ' *)",
+      "Bash(node -e \"require\\('dotenv'\\).config\\(\\); console.log\\(process.env.SUPABASE_URL, process.env.SUPABASE_ANON_KEY\\)\")",
+      "Bash(node dist/server.js)"
+    ]
+  }
+}

@@ -1,11 +1,12 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { supabase } from '../lib/supabase';
 import { useAuthStore } from '../stores/authStore';
+import { applyTheme } from '../lib/theme';
 import { Card, CardContent, CardHeader } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
 import { Progress } from '../components/ui/Progress';
 import { Badge } from '../components/ui/Badge';
-import { Target, BookOpen, Clock, TrendingUp, Plus, ArrowRight, Sparkles, Bot } from 'lucide-react';
+import { Target, BookOpen, Clock, TrendingUp, Plus, ArrowRight, Sparkles, Bot, Settings, LogOut, User, ChevronDown } from 'lucide-react';
 import { cn } from '../lib/utils';
 
 interface LearningGoal {
@@ -21,6 +22,9 @@ export function DashboardPage() {
   const [goals, setGoals] = useState<LearningGoal[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeGoal, setActiveGoal] = useState<LearningGoal | null>(null);
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [profile, setProfile] = useState<{ avatar_url?: string | null; theme_preference?: string } | null>(null);
+  const menuRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const fetchGoals = async () => {
@@ -39,7 +43,22 @@ export function DashboardPage() {
       setLoading(false);
     };
 
+    const fetchProfile = async () => {
+      if (!session?.access_token) return;
+      try {
+        const res = await fetch(`${import.meta.env.VITE_API_URL}/api/profile`, {
+          headers: { Authorization: `Bearer ${session.access_token}` },
+        });
+        if (res.ok) {
+          const { profile: p } = await res.json();
+          setProfile(p);
+          applyTheme(p?.theme_preference);
+        }
+      } catch { /* ignore — dashboard still works without profile */ }
+    };
+
     fetchGoals();
+    fetchProfile();
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       setSession(session);
@@ -48,9 +67,19 @@ export function DashboardPage() {
     return () => subscription.unsubscribe();
   }, [session, user, setSession]);
 
+  // Close dropdown on outside click
+  useEffect(() => {
+    function handleClickOutside(e: MouseEvent) {
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) setMenuOpen(false);
+    }
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
   const handleSignOut = async () => {
     await supabase.auth.signOut();
     useAuthStore.getState().signOut();
+    window.location.href = '/';
   };
 
   const stats = [
@@ -83,12 +112,54 @@ export function DashboardPage() {
             </nav>
           </div>
           <div className="flex items-center gap-4">
-            <div className="hidden sm:block text-sm text-on-surface-variant">
-              {user?.email}
+            {/* User menu */}
+            <div className="relative" ref={menuRef}>
+              <button
+                id="user-menu-button"
+                onClick={() => setMenuOpen((o) => !o)}
+                className={cn(
+                  'flex items-center gap-2 px-3 py-1.5 rounded-lg transition-colors',
+                  'hover:bg-surface-container-low text-on-surface-variant hover:text-on-surface'
+                )}
+                aria-haspopup="true"
+                aria-expanded={menuOpen}
+              >
+                {profile?.avatar_url ? (
+                  <img src={profile.avatar_url} alt="You" className="size-8 rounded-full object-cover" />
+                ) : (
+                  <div className="size-8 rounded-full bg-primary-container/20 flex items-center justify-center">
+                    <User className="size-4 text-primary" />
+                  </div>
+                )}
+                <span className="hidden sm:block text-sm">{user?.email?.split('@')[0]}</span>
+                <ChevronDown className={cn('size-4 transition-transform', menuOpen && 'rotate-180')} />
+              </button>
+
+              {menuOpen && (
+                <div
+                  role="menu"
+                  className="absolute right-0 top-full mt-2 w-48 card shadow-lg py-1 z-50 animate-fade-in"
+                >
+                  <a
+                    href="/settings"
+                    role="menuitem"
+                    className="flex items-center gap-3 px-4 py-2.5 text-sm text-on-surface hover:bg-surface-container-low transition-colors"
+                    onClick={() => setMenuOpen(false)}
+                  >
+                    <Settings className="size-4" />
+                    Settings
+                  </a>
+                  <button
+                    role="menuitem"
+                    onClick={handleSignOut}
+                    className="flex w-full items-center gap-3 px-4 py-2.5 text-sm text-error hover:bg-error-container/30 transition-colors"
+                  >
+                    <LogOut className="size-4" />
+                    Sign Out
+                  </button>
+                </div>
+              )}
             </div>
-            <Button variant="ghost" size="sm" onClick={handleSignOut}>
-              Sign Out
-            </Button>
           </div>
         </div>
       </header>
